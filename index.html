@@ -184,10 +184,10 @@
 
         // --- COMPONENTS ---
 
-        const Dashboard = ({ apiKey, setApiKey, modelName, setModelName, changeView, daysLeft, openNotebook }) => {
+     const Dashboard = ({ apiKey, setApiKey, modelName, setModelName, changeView, daysLeft, openNotebook }) => {
             const [keyInput, setKeyInput] = useState(apiKey || "");
             const [modelInput, setModelInput] = useState(modelName || "gemini-2.5-flash-preview-09-2025");
-            const [keyStatus, setKeyStatus] = useState(apiKey ? 'valid' : 'idle'); // idle, valid, invalid, checking
+            const [keyStatus, setKeyStatus] = useState(apiKey ? 'valid' : 'idle'); 
 
             const saveKey = async () => { 
                 if(!keyInput.trim()) return alert("Lütfen anahtarı kutuya yapıştır!");
@@ -195,18 +195,13 @@
                 
                 setKeyStatus('checking');
                 try {
-                    // Anahtarı test etmek için basit bir istek atıyoruz (Kullanıcının girdiği modeli kullanarak)
                     await callGoogle(keyInput.trim(), modelInput.trim(), "Merhaba", "html");
-                    
-                    // Başarılıysa
                     localStorage.setItem("baris_key", keyInput.trim()); 
                     localStorage.setItem("baris_model", modelInput.trim()); 
                     setApiKey(keyInput.trim()); 
                     setModelName(modelInput.trim());
                     setKeyStatus('valid');
-                    alert("Anahtar ve Model Doğrulandı! ✅"); 
                 } catch (error) {
-                    // Başarısızsa
                     setKeyStatus('invalid');
                     alert("Bu anahtar veya model çalışmıyor! ❌");
                 }
@@ -216,213 +211,94 @@
                 if(keyStatus === 'valid') return 'border-emerald-500 bg-emerald-50';
                 if(keyStatus === 'invalid') return 'border-red-500 bg-red-50';
                 if(keyStatus === 'checking') return 'border-yellow-500 bg-yellow-50';
-                return 'border-orange-200 bg-orange-50'; // Default idle
+                return 'border-indigo-200 bg-white';
             };
 
             return (
-                <div className="h-full overflow-y-auto p-6 flex flex-col items-center max-w-5xl mx-auto anim-fade">
-                    <div className="text-center mb-8 mt-4">
-                        <div className="bg-indigo-100 text-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm"><Icon name="crown" size={32}/></div>
-                        <h1 className="text-5xl font-black text-slate-800 brand tracking-tighter">BARIŞ AKADEMİ</h1>
-                        <p className="text-indigo-600 font-bold text-lg tracking-widest uppercase opacity-80">2026 Efsane Sürüm</p>
-                    </div>
-
-                    <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                        {/* SAYAÇ */}
-                        <div className="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-[2rem] p-8 text-white shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[12rem]">
-                            <div>
-                                <div className="text-indigo-200 text-xs font-bold uppercase tracking-widest mb-2">Sınava Kalan Süre</div>
-                                <div className="text-7xl font-black brand">{daysLeft}</div>
-                                <div className="text-indigo-100 font-bold mt-1">GÜN KALDI</div>
-                            </div>
-                            <Icon name="calendar-clock" size={140} className="absolute -right-8 -bottom-8 opacity-10 rotate-12"/>
-                        </div>
-                        
-                        {/* ANAHTAR VE MODEL GİRİŞİ (ORİJİNAL KORUNDU, MODEL INPUT EKLENDİ) */}
-                        <div className={`rounded-[2rem] p-8 shadow-xl border-4 flex flex-col justify-center min-h-[12rem] relative overflow-hidden transition-colors duration-300 ${getBorderColor()}`}>
-                            {!apiKey ? (
-                                <div className="z-10">
-                                    <div className="flex items-center gap-2 text-slate-700 font-black text-xl mb-3">
-                                        <Icon name="settings"/> 
-                                        {keyStatus === 'invalid' ? <span className="text-red-600">Hatalı Bilgi!</span> : 'AYARLAR'}
-                                    </div>
-                                    <p className="text-slate-600 text-sm mb-4 font-medium">API Anahtarını ve kullanmak istediğin modeli gir.</p>
-                                    <div className="flex flex-col gap-2">
-                                        <input 
-                                            value={keyInput} 
-                                            onChange={e=>setKeyInput(e.target.value)} 
-                                            className="w-full p-2.5 bg-white border-2 border-slate-200 rounded-xl font-mono text-sm outline-none focus:border-indigo-500 transition shadow-inner" 
-                                            placeholder="Google API Anahtarı (AIzaSy...)"
-                                            disabled={keyStatus === 'checking'}
-                                        />
-                                        <div className="flex gap-2">
-                                            <input 
-                                                value={modelInput} 
-                                                onChange={e=>setModelInput(e.target.value)} 
-                                                className="flex-1 p-2.5 bg-white border-2 border-slate-200 rounded-xl font-mono text-sm outline-none focus:border-indigo-500 transition shadow-inner" 
-                                                placeholder="Model (Örn: gemini-2.5-flash...)"
-                                                disabled={keyStatus === 'checking'}
-                                            />
-                                            <button 
-                                                onClick={saveKey} 
-                                                disabled={keyStatus === 'checking'}
-                                                className="bg-slate-800 text-white px-5 rounded-xl font-bold shadow-md hover:bg-black active:scale-95 transition flex items-center text-sm"
-                                            >
-                                                {keyStatus === 'checking' ? '...' : 'KAYDET'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="text-center z-10 flex flex-col items-center justify-center">
-                                    <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 animate-pulse"><Icon name="check" size={32}/></div>
-                                    <div className="font-bold text-emerald-600 text-xl">Sistem Aktif & Hazır</div>
-                                    <div className="text-xs font-mono text-emerald-700 mt-1 opacity-80">Model: {modelName}</div>
-                                    <button onClick={()=>{setApiKey(""); setKeyStatus('idle'); setKeyInput("");}} className="text-xs text-slate-400 font-bold hover:text-red-500 underline mt-2">Ayarları Değiştir</button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
-                        <button onClick={()=>changeView('syllabus')} className="bg-white p-6 rounded-3xl shadow-lg border-2 border-transparent hover:border-indigo-500 hover:shadow-indigo-100 transition group flex flex-col items-center gap-3">
-                            <div className="bg-indigo-100 text-indigo-600 p-4 rounded-2xl group-hover:scale-110 transition"><Icon name="book-open-check" size={32}/></div>
-                            <span className="font-bold text-slate-700 text-lg">Ders & Müfredat</span>
-                        </button>
-                        <button onClick={()=>changeView('trial_setup')} className="bg-white p-6 rounded-3xl shadow-lg border-2 border-transparent hover:border-emerald-500 hover:shadow-emerald-100 transition group flex flex-col items-center gap-3">
-                            <div className="bg-emerald-100 text-emerald-600 p-4 rounded-2xl group-hover:scale-110 transition"><Icon name="file-badge" size={32}/></div>
-                            <span className="font-bold text-slate-700 text-lg">Deneme Ol</span>
-                        </button>
-                        <button onClick={openNotebook} className="bg-white p-6 rounded-3xl shadow-lg border-2 border-transparent hover:border-amber-500 hover:shadow-amber-100 transition group flex flex-col items-center gap-3">
-                            <div className="bg-amber-100 text-amber-600 p-4 rounded-2xl group-hover:scale-110 transition"><Icon name="notebook-pen" size={32}/></div>
-                            <span className="font-bold text-slate-700 text-lg">Akıllı Defter</span>
-                        </button>
-                        <button onClick={()=>changeView('errors')} className="bg-white p-6 rounded-3xl shadow-lg border-2 border-transparent hover:border-red-500 hover:shadow-red-100 transition group flex flex-col items-center gap-3">
-                            <div className="bg-red-100 text-red-600 p-4 rounded-2xl group-hover:scale-110 transition"><Icon name="alert-triangle" size={32}/></div>
-                            <span className="font-bold text-slate-700 text-lg">Hata Defteri</span>
-                        </button>
-                    </div>
-                </div>
-            );
-        };
-
-        const Syllabus = ({ apiKey, modelName, goBack, onAction }) => {
-            const [tab, setTab] = useState('OABT_ALAN');
-            
-            const colors = {
-                'rose': 'bg-rose-600 text-white', 'rose-light': 'bg-rose-50 text-rose-700 border-rose-100',
-                'amber': 'bg-amber-500 text-white', 'amber-light': 'bg-amber-50 text-amber-700 border-amber-100',
-                'sky': 'bg-sky-600 text-white', 'sky-light': 'bg-sky-50 text-sky-700 border-sky-100'
-            };
-
-            const activeColor = CURRICULUM[tab].color;
-
-            return (
-                <div className="h-full flex flex-col bg-slate-50 anim-fade">
-                    <div className="bg-white p-4 border-b flex items-center gap-4 shadow-sm z-10">
-                        <button onClick={goBack} className="bg-slate-100 p-2 rounded-xl hover:bg-slate-200"><Icon name="arrow-left"/></button>
-                        <h2 className="font-bold text-xl text-slate-800">Müfredat & Çalışma</h2>
-                    </div>
+                <div className="h-full overflow-y-auto p-4 md:p-8 flex flex-col items-center max-w-4xl mx-auto anim-fade">
                     
-                    {/* Sekmeler */}
-                    <div className="p-4 flex gap-3 overflow-x-auto hide-scroll sticky top-0 z-10 bg-slate-50/95 backdrop-blur">
-                        {Object.keys(CURRICULUM).map(k=>(
-                            <button key={k} onClick={()=>setTab(k)} className={`px-6 py-3 rounded-2xl font-bold whitespace-nowrap transition shadow-sm border-2 ${tab===k ? `border-${CURRICULUM[k].color}-500 bg-${CURRICULUM[k].color}-50 text-${CURRICULUM[k].color}-700` : 'bg-white text-slate-500 border-slate-200'}`}>
-                                {CURRICULUM[k].title}
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-24">
-                        <div className={`p-4 rounded-2xl mb-4 font-bold text-center text-white shadow-md bg-gradient-to-r ${activeColor==='rose'?'from-rose-500 to-pink-600':activeColor==='amber'?'from-amber-500 to-orange-600':'from-sky-500 to-blue-600'}`}>
-                            {CURRICULUM[tab].title} - Konu Listesi
-                        </div>
-
-                        {CURRICULUM[tab].units.map((unit)=>(
-                            <div key={unit.id} className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                                <div className={`p-5 font-bold border-b text-lg flex items-center gap-3 ${activeColor==='rose'?'bg-rose-50 text-rose-800':activeColor==='amber'?'bg-amber-50 text-amber-800':'bg-sky-50 text-sky-800'}`}>
-                                    <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm text-white ${activeColor==='rose'?'bg-rose-500':activeColor==='amber'?'bg-amber-500':'bg-sky-500'}`}>{unit.id}</span>
-                                    {unit.title}
-                                </div>
-                                <div className="divide-y divide-slate-50">
-                                    {unit.topics.map((t, idx)=>(
-                                        <div key={idx} className="p-5 hover:bg-slate-50 transition group">
-                                            <div className="font-bold text-slate-700 mb-4 text-lg flex items-center gap-2">
-                                                <span className="text-slate-400 text-sm font-mono">{t.split('.')[0] + '.' + t.split('.')[1]}</span>
-                                                {t.split('.').slice(2).join('.')}
-                                            </div>
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 opacity-80 group-hover:opacity-100 transition">
-                                                <button onClick={()=>onAction('hap',t)} className="bg-white border-2 border-amber-200 text-amber-700 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-amber-500 hover:text-white transition"><Icon name="pill" size={18}/> HAP</button>
-                                                <button onClick={()=>onAction('ozet',t)} className="bg-white border-2 border-blue-200 text-blue-700 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-500 hover:text-white transition"><Icon name="file-text" size={18}/> ÖZET</button>
-                                                <button onClick={()=>onAction('card',t)} className="bg-white border-2 border-purple-200 text-purple-700 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-purple-500 hover:text-white transition"><Icon name="layers" size={18}/> KART</button>
-                                                <button onClick={()=>onAction('test',t)} className="bg-white border-2 border-emerald-200 text-emerald-700 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-500 hover:text-white transition"><Icon name="check-circle" size={18}/> SORU</button>
-                                                <button onClick={()=>onAction('video',t)} className="col-span-2 md:col-span-4 bg-red-50 text-red-600 py-2 rounded-xl text-sm font-bold border border-red-200 flex items-center justify-center gap-2 hover:bg-red-500 hover:text-white transition"><Icon name="youtube" size={16}/> Konu Anlatım Videoları</button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                    {/* ULTRA KOMPAKT ÜST BAR (SAYAÇ VE AYARLAR BİR ARADA) */}
+                    <div className="w-full flex flex-col md:flex-row items-center justify-between bg-white rounded-[2rem] p-4 shadow-xl border-4 border-slate-50 mb-10 gap-4">
+                        <div className="flex items-center gap-4 w-full md:w-auto">
+                            <div className="bg-gradient-to-br from-rose-500 to-red-600 text-white px-6 py-3 rounded-2xl flex flex-col items-center justify-center shadow-md">
+                                <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Sınava Kalan</span>
+                                <span className="text-2xl font-black brand leading-none">{daysLeft} Gün</span>
                             </div>
-                        ))}
-                    </div>
-                </div>
-            );
-        };
-
-        const SmartNotebook = ({ apiKey, modelName, close }) => {
-            const [notes, setNotes] = useState(localStorage.getItem('baris_notebook') || "");
-            const [processing, setProcessing] = useState(false);
-            const [quizFromNotes, setQuizFromNotes] = useState(null);
-            const handleSave = (val) => { setNotes(val); localStorage.setItem('baris_notebook', val); };
-            const polish = async () => { if(!notes.trim()) return; setProcessing(true); try { const res = await callGoogle(apiKey, modelName, `Düzelt:\n${notes}`, 'html'); handleSave(res.replace(/<[^>]*>?/gm, '')); alert("Düzenlendi!"); } catch(e){} finally { setProcessing(false); } };
-            const genQuiz = async () => { 
-                if(!notes.trim()) return; 
-                setProcessing(true); 
-                try { 
-                    const prompt = `Metin: "${notes}". Bu metinden 5 adet çoktan seçmeli soru hazırla. Okul öncesi ÖABT sınavı kalitesinde zorlayıcı olsun. Format: JSON Array olarak şu yapıda olsun: [{"q":"Soru","opts":["A","B","C","D","E"],"ans":0,"exp":"Açıklama"}]. Sadece JSON ver.`;
-                    const res = await callGoogle(apiKey, modelName, prompt, 'json'); 
-                    setQuizFromNotes(res); 
-                } catch(e){ alert("Hata oluştu."); } finally { setProcessing(false); } 
-            };
-            if(quizFromNotes) return <div className="fixed inset-0 z-[90] bg-white"><Quiz questions={quizFromNotes} goBack={()=>setQuizFromNotes(null)} addToErrors={()=>{}} isNotebook={true}/></div>;
-            return <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm anim-fade" onClick={close}><div className="bg-white w-full max-w-3xl h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden" onClick={e=>e.stopPropagation()}><div className="p-4 bg-amber-400 text-amber-950 font-bold flex justify-between items-center"><span className="flex items-center gap-2"><Icon name="edit-3"/> Not Defterim</span><button onClick={close}><Icon name="x"/></button></div><textarea value={notes} onChange={e=>handleSave(e.target.value)} className="flex-1 p-6 bg-amber-50 resize-none outline-none text-lg text-slate-700 leading-relaxed font-medium" placeholder="Buraya yaz..."></textarea><div className="p-3 bg-white border-t flex gap-2"><button onClick={polish} disabled={processing} className="flex-1 bg-indigo-100 text-indigo-700 py-3 rounded-xl font-bold flex items-center justify-center gap-2"><Icon name="wand-2"/> Düzenle</button><button onClick={genQuiz} disabled={processing} className="flex-1 bg-emerald-100 text-emerald-700 py-3 rounded-xl font-bold flex items-center justify-center gap-2"><Icon name="brain-circuit"/> Soru Üret</button></div></div></div>;
-        };
-
-        const InfoModal = ({ data, close }) => (
-            <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm anim-fade" onClick={close}>
-                <div className="bg-white w-full max-w-2xl max-h-[85vh] rounded-3xl p-8 shadow-2xl overflow-y-auto relative" onClick={e=>e.stopPropagation()}>
-                    <button onClick={close} className="absolute top-4 right-4 bg-slate-100 p-2 rounded-full hover:bg-slate-200"><Icon name="x"/></button>
-                    <h2 className="text-2xl font-black mb-6 text-indigo-700 border-b pb-2">{data.title}</h2>
-                    <div className="prose prose-lg prose-slate readable-text" dangerouslySetInnerHTML={{__html: data.content}}></div>
-                </div>
-            </div>
-        );
-
-        const TeacherSelectModal = ({ topic, close }) => {
-            const cat = topic.includes('Tarih')?'Tarih':topic.includes('Coğrafya')?'Coğrafya':topic.includes('Vatandaşlık')?'Vatandaşlık':topic.includes('Matematik')?'Matematik':topic.includes('Gelişim')||topic.includes('Öğrenme')||topic.includes('Rehberlik')?'Eğitim':'ÖABT';
-            return (
-                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm anim-fade" onClick={close}>
-                    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl" onClick={e=>e.stopPropagation()}>
-                        <h3 className="font-bold text-xl mb-4 text-red-600 flex items-center gap-2"><Icon name="youtube"/> Hoca Seç</h3>
-                        <div className="space-y-2">
-                            {INSTRUCTORS[cat]?.map(h=><button key={h} onClick={()=>window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(h+" "+topic)}`,'_blank')} className="w-full p-4 bg-slate-50 hover:bg-red-50 text-left rounded-xl font-bold text-slate-700 hover:text-red-600 transition border border-slate-100">{h}</button>)}
-                            <button onClick={()=>window.open(`https://www.youtube.com/results?search_query=KPSS+${encodeURIComponent(topic)}`,'_blank')} className="w-full p-4 border-2 border-dashed border-slate-300 text-slate-400 font-bold rounded-xl">Genel Arama</button>
+                            <div>
+                                <h1 className="text-2xl font-black text-slate-800 brand leading-none">DENEME ÜSSÜ</h1>
+                                <div className="text-indigo-600 font-bold text-xs tracking-widest uppercase">Barış Akademi 2026</div>
+                            </div>
                         </div>
-                        <button onClick={close} className="w-full mt-6 bg-slate-100 py-3 rounded-xl font-bold text-slate-500">Kapat</button>
+
+                        <div className={`flex items-center gap-2 bg-slate-50 p-2 rounded-2xl border-2 transition w-full md:w-auto ${getBorderColor()}`}>
+                            <Icon name="cpu" size={18} className="text-slate-400 hidden md:block ml-2"/>
+                            <input value={keyInput} onChange={e=>{setKeyInput(e.target.value); setKeyStatus('idle');}} type="password" placeholder="API Anahtarı" className="w-full md:w-28 bg-transparent text-sm font-mono outline-none border-r border-slate-300 p-1"/>
+                            <input value={modelInput} onChange={e=>setModelInput(e.target.value)} className="w-full md:w-36 bg-transparent text-sm font-bold text-slate-600 outline-none p-1" placeholder="Model Adı"/>
+                            <button onClick={saveKey} className={`px-4 py-2 rounded-xl text-sm font-black text-white shadow-md transition ${keyStatus==='valid'?'bg-emerald-500':'bg-indigo-600 hover:bg-indigo-700'}`}>
+                                {keyStatus==='checking' ? '...' : keyStatus==='valid' ? '✅' : 'BAĞLAN'}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* ANA BUTONLAR (Ekrana Tam Hakimiyet) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                        <button onClick={()=>changeView('trial_setup')} className="bg-indigo-600 p-10 rounded-[2.5rem] shadow-2xl hover:bg-indigo-700 hover:-translate-y-1 transition-all group flex flex-col items-center gap-4 relative overflow-hidden">
+                            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                            <div className="bg-white/20 text-white p-6 rounded-full group-hover:scale-110 transition z-10"><Icon name="rocket" size={56}/></div>
+                            <span className="font-black text-white text-3xl tracking-widest z-10">DENEME BAŞLAT</span>
+                            <span className="text-indigo-200 font-bold z-10">Özel Yapay Zeka Modu</span>
+                        </button>
+                        <button onClick={()=>changeView('errors')} className="bg-white p-10 rounded-[2.5rem] shadow-xl border-4 border-slate-100 hover:border-red-500 hover:-translate-y-1 transition-all group flex flex-col items-center gap-4">
+                            <div className="bg-red-100 text-red-600 p-6 rounded-full group-hover:scale-110 transition"><Icon name="flame" size={56}/></div>
+                            <span className="font-black text-slate-800 text-3xl">HATA DEFTERİM</span>
+                            <span className="text-slate-500 font-bold">Zihin Haritalı Çözümler</span>
+                        </button>
                     </div>
                 </div>
             );
         };
+const TrialSetup = ({ goBack, startTrial }) => {
+            const [config, setConfig] = useState({ type: 'Okul Öncesi ÖABT Tüm Konular', count: 15, strategy: 'ÖSYM Standart Zorluk' });
+            
+            const categories = [
+                "Okul Öncesi ÖABT Tüm Konular", "Okul Öncesi Eğitime Giriş & Yaklaşımlar", "Çocuk Psikolojisi ve Gelişimi", 
+                "Anne-Çocuk Sağlığı ve İlkyardım", "Çocuk Edebiyatı ve Oyun Gelişimi", "AGS - Genel Yetenek Genel Kültür", "Eğitim Bilimleri ve Mevzuat (ÖMK)"
+            ];
 
-        const TrialSetup = ({ goBack, startTrial }) => {
-            const [config, setConfig] = useState({ type: 'OABT', count: 20 });
+            const strategies = ["ÖSYM Standart Zorluk", "Ters Köşe (Çeldiricisi Yüksek)", "Kavram Karşılaştırmalı (Zor)"];
+
             return (
-                <div className="h-full flex flex-col justify-center p-6 bg-slate-50 anim-fade">
-                    <button onClick={goBack} className="absolute top-6 left-6 bg-white p-3 rounded-full shadow"><Icon name="arrow-left"/></button>
-                    <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl max-w-lg mx-auto w-full border border-slate-100">
-                        <div className="text-center mb-8"><h2 className="text-3xl font-black text-slate-800">Deneme Oluştur</h2></div>
-                        <div className="space-y-3 mb-8">{[{id:'OABT', l:'ÖABT Alan'}, {id:'AGS', l:'AGS Genel'}, {id:'EGITIM', l:'Eğitim Bil.'}].map(opt=><button key={opt.id} onClick={()=>setConfig({...config, type:opt.id})} className={`w-full p-5 rounded-2xl text-left font-bold transition border-2 ${config.type===opt.id ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-100 text-slate-500'}`}>{opt.l}</button>)}</div>
-                        <div className="flex justify-between gap-3 mb-8">{[10, 20, 30, 50].map(n=><button key={n} onClick={()=>setConfig({...config, count:n})} className={`flex-1 py-4 rounded-xl font-bold transition ${config.count===n?'bg-emerald-500 text-white shadow-lg':'bg-slate-100 text-slate-400'}`}>{n}</button>)}</div>
-                        <button onClick={()=>startTrial(config)} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-bold text-xl shadow-xl hover:bg-indigo-700 transition active:scale-95">BAŞLAT</button>
+                <div className="h-full flex flex-col justify-center p-4 md:p-8 bg-slate-100 anim-fade">
+                    <button onClick={goBack} className="absolute top-6 left-6 bg-white p-4 rounded-full shadow-md text-slate-600 hover:text-indigo-600 transition"><Icon name="arrow-left" size={24}/></button>
+                    <div className="bg-white p-8 md:p-12 rounded-[3rem] shadow-2xl max-w-2xl mx-auto w-full border-4 border-indigo-50 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 bg-amber-400 text-amber-900 font-black text-xs px-4 py-2 rounded-bl-2xl">TÜRKİYE'DE İLK! 🚀</div>
+                        <div className="text-center mb-8"><h2 className="text-4xl font-black text-slate-800">Yapay Zeka Sınav Koçu</h2><p className="text-slate-500 font-bold mt-2">Denemeni dilediğin gibi özelleştir.</p></div>
+                        
+                        <div className="mb-6">
+                            <label className="block text-sm font-black text-indigo-600 uppercase tracking-widest mb-2">Hedef Alan</label>
+                            <select value={config.type} onChange={e=>setConfig({...config, type: e.target.value})} className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl font-bold text-slate-700 text-lg outline-none focus:border-indigo-500 cursor-pointer shadow-inner">
+                                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                        </div>
+
+                        <div className="mb-6">
+                            <label className="block text-sm font-black text-indigo-600 uppercase tracking-widest mb-2">Zorluk Stratejisi</label>
+                            <select value={config.strategy} onChange={e=>setConfig({...config, strategy: e.target.value})} className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl font-bold text-slate-700 text-lg outline-none focus:border-indigo-500 cursor-pointer shadow-inner">
+                                {strategies.map(s => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                        </div>
+
+                        <div className="mb-10">
+                            <label className="block text-sm font-black text-indigo-600 uppercase tracking-widest mb-2">Kaç Soru Çözeceksin?</label>
+                            <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-2xl border-2 border-slate-200 shadow-inner">
+                                <input type="range" min="1" max="100" value={config.count} onChange={e=>setConfig({...config, count: parseInt(e.target.value)})} className="flex-1 ml-4 accent-indigo-600" />
+                                <input type="number" min="1" max="100" value={config.count} onChange={e=>setConfig({...config, count: parseInt(e.target.value) || 1})} className="w-24 p-3 bg-white border-2 border-slate-200 rounded-xl font-black text-2xl text-center text-indigo-600 outline-none focus:border-indigo-500" />
+                            </div>
+                        </div>
+
+                        <button onClick={()=>startTrial(config)} className="w-full bg-emerald-500 text-white py-6 rounded-[2rem] font-black text-2xl shadow-xl hover:bg-emerald-600 transition active:scale-95 flex items-center justify-center gap-3">
+                            <Icon name="rocket" size={28}/> SİMÜLASYONU BAŞLAT
+                        </button>
                     </div>
                 </div>
             );
@@ -437,7 +313,7 @@
             return (
                 <div className="h-full flex flex-col bg-slate-50 p-6 anim-fade">
                     <div className="flex justify-between items-center mb-6"><button onClick={goBack} className="text-slate-400 font-bold">Çıkış</button><div className="bg-white px-4 py-2 rounded-full font-bold shadow-sm text-indigo-600">{idx+1}/{questions.length}</div></div>
-                    <div className="flex-1 overflow-y-auto"><div className="bg-white p-8 rounded-3xl shadow-md border border-slate-100 mb-6"><p className="font-bold text-xl text-slate-800 leading-relaxed">{q.q}</p></div><div className="space-y-4">{q.opts.map((o,i)=><button key={i} onClick={()=>handleAns(i)} disabled={show} className={`w-full text-left p-5 rounded-2xl border-2 font-medium text-lg transition ${show?(i===q.ans?'border-emerald-500 bg-emerald-50 text-emerald-800':i!==q.ans&&'opacity-50'):'border-white bg-white hover:border-indigo-200'}`}>{o}</button>)}</div>{show && <div className="mt-8 p-6 bg-indigo-50 border border-indigo-100 rounded-3xl text-indigo-900 font-medium">{q.exp}</div>}</div>
+                    <div className="flex-1 overflow-y-auto"><div className="bg-white p-8 rounded-3xl shadow-md border border-slate-100 mb-6"><p className="font-bold text-xl text-slate-800 leading-relaxed">{q.q}</p></div><div className="space-y-4">{q.opts.map((o,i)=><button key={i} onClick={()=>handleAns(i)} disabled={show} className={`w-full text-left p-5 rounded-2xl border-2 font-medium text-lg transition ${show?(i===q.ans?'border-emerald-500 bg-emerald-50 text-emerald-800':i!==q.ans&&'opacity-50'):'border-white bg-white hover:border-indigo-200'}`}>{o}</button>)}</div>{show && <div className="mt-10 p-8 bg-white border-4 border-indigo-200 rounded-[2rem] text-slate-800 shadow-2xl readable-text anim-fade" dangerouslySetInnerHTML={{__html: q.exp}}></div>}</div>
                     {show && <button onClick={()=>{if(idx<questions.length-1){setIdx(idx+1);setShow(false)}else{alert(`Sınav Bitti! Puan: ${score}`);goBack()}}} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold mt-4 shadow-lg text-lg">İleri</button>}
                 </div>
             );
@@ -495,8 +371,7 @@
                 if(!modelName) return alert("Model adı giriniz!");
                 setLoading(true);
                 try {
-                    // DENEME PROMPTU OKUL ÖNCESİ ÖABT'YE UYARLANDI
-                    const prompt = `KPSS/ÖABT ${conf.type} alanı için, Okul Öncesi Öğretmenliği seviyesinde ${conf.count} adet zor, ÖSYM tarzı deneme sorusu. Format: JSON Array [{"q":"...","opts":["..."],"ans":0,"exp":"..."}]. Sadece JSON.`;
+                    const prompt = `Sen KPSS uzmanısın. ${conf.type} alanında, tam ${conf.count} adet deneme sorusu yaz. Stratejin: ${conf.strategy}. SADECE JSON GÖNDER. Format: [{"q":"Soru","opts":["A","B","C","D","E"],"ans":0,"exp":"Bu konuyu ZİHİN HARİTASI mantığıyla, HTML <strong>, <mark>, <ul> ve emojiler kullanarak detaylıca açıkla. Doğru ve yanlış cevapların nedenlerini net belirt. Akılda kalıcı hafıza çivisi ekle."}]`;
                     const res = await callGoogle(apiKey, modelName, prompt, 'json');
                     setQuizData(res); setView('quiz');
                 } catch(e) { alert("Hata."); } finally { setLoading(false); }
@@ -525,5 +400,4 @@
     </script>
 </body>
 </html>
-
 
