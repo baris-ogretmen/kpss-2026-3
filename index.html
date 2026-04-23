@@ -22,10 +22,17 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         
         /* Renkli vurgular */
-        .readable-text strong { color: #4f46e5; font-weight: 800; }
-        .readable-text em { background-color: #fef08a; color: #854d0e; font-style: normal; padding: 0 4px; border-radius: 4px; font-weight: 600; }
-        .readable-text ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
-        .readable-text h3 { color: #1e293b; font-size: 1.25rem; font-weight: 800; margin-top: 1.5rem; margin-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.25rem; }
+        .readable-text strong { color: #e11d48; font-weight: 900; background: #ffe4e6; padding: 2px 6px; border-radius: 6px; border: 1px solid #fda4af; }
+        .readable-text em { background-color: #fef08a; color: #854d0e; font-style: normal; padding: 2px 6px; border-radius: 6px; font-weight: 800; border: 1px dashed #eab308; }
+        .readable-text ul { list-style-type: none; padding-left: 0.5rem; margin-bottom: 1.5rem; }
+        .readable-text li { margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative; font-weight: 600; color: #334155; }
+        .readable-text li::before { content: "🎯"; position: absolute; left: 0; top: 0; font-size: 1rem; }
+        .readable-text h3 { color: #1e3a8a; font-size: 1.5rem; font-weight: 900; margin-top: 2rem; margin-bottom: 1rem; border-bottom: 3px solid #bfdbfe; padding-bottom: 0.5rem; display: inline-block; }
+        .readable-text table { width: 100%; border-collapse: separate; border-spacing: 0; margin: 1.5rem 0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 2px solid #e2e8f0; }
+        .readable-text th { background-color: #4f46e5; color: white; padding: 14px; font-weight: 900; text-align: left; }
+        .readable-text td { background-color: #f8fafc; padding: 14px; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #1e293b; }
+        .readable-text tr:last-child td { border-bottom: none; }
+        .readable-text tr:nth-child(even) td { background-color: #ffffff; }
         
         /* Kart Stili */
         .perspective-1000 { perspective: 1000px; }
@@ -221,7 +228,9 @@
                                             <div className="flex flex-wrap gap-2">
                                                 <button onClick={()=>onAction('hap', t)} className="flex-1 xl:flex-none px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-xl font-black text-sm hover:bg-emerald-200 transition shadow-sm"><Icon name="zap" size={16} className="inline mb-1 mr-1"/> Hap Bilgi</button>
                                                 <button onClick={()=>onAction('ozet', t)} className="flex-1 xl:flex-none px-4 py-2.5 bg-blue-100 text-blue-700 rounded-xl font-black text-sm hover:bg-blue-200 transition shadow-sm"><Icon name="file-text" size={16} className="inline mb-1 mr-1"/> Özet</button>
+                                                <button onClick={()=>onAction('hafiza', t)} className="flex-1 xl:flex-none px-4 py-2.5 bg-yellow-100 text-yellow-700 rounded-xl font-black text-sm hover:bg-yellow-200 transition shadow-sm"><Icon name="lightbulb" size={16} className="inline mb-1 mr-1"/> Hafıza Çivisi</button>
                                                 <button onClick={()=>onAction('card', t)} className="flex-1 xl:flex-none px-4 py-2.5 bg-purple-100 text-purple-700 rounded-xl font-black text-sm hover:bg-purple-200 transition shadow-sm"><Icon name="copy" size={16} className="inline mb-1 mr-1"/> Kartlar</button>
+                                                <button onClick={()=>onAction('duel', t)} className="flex-1 xl:flex-none px-4 py-2.5 bg-orange-100 text-orange-700 rounded-xl font-black text-sm hover:bg-orange-200 transition shadow-sm"><Icon name="swords" size={16} className="inline mb-1 mr-1"/> Düello</button>
                                                 <button onClick={()=>onAction('test', t)} className="flex-1 xl:flex-none px-4 py-2.5 bg-rose-100 text-rose-700 rounded-xl font-black text-sm hover:bg-rose-200 transition shadow-sm"><Icon name="target" size={16} className="inline mb-1 mr-1"/> Mini Test</button>
                                             </div>
                                         </div>
@@ -234,10 +243,15 @@
             );
         };
 
-        const Dashboard = ({ apiKey, setApiKey, modelName, setModelName, changeView, daysLeft }) => {
+       const Dashboard = ({ apiKey, setApiKey, modelName, setModelName, changeView, daysLeft, stats, handleAction }) => {
             const [keyInput, setKeyInput] = useState(apiKey || "");
             const [modelInput, setModelInput] = useState(modelName || "gemini-2.5-flash-preview-09-2025");
             const [keyStatus, setKeyStatus] = useState(apiKey ? 'valid' : 'idle'); 
+
+            // Risk Analizi: En çok hata yapılan konuyu bulur
+            const riskliKonu = Object.keys(stats || {}).length > 0 
+                ? Object.keys(stats).reduce((a, b) => stats[a] > stats[b] ? a : b) 
+                : null;
 
             const saveKey = async () => { 
                 if(!keyInput.trim()) return alert("Lütfen anahtarı kutuya yapıştır!");
@@ -265,9 +279,9 @@
             };
 
             return (
-                <div className="h-full overflow-y-auto p-4 md:p-8 flex flex-col items-center max-w-5xl mx-auto anim-fade">
+                <div className="h-full overflow-y-auto p-4 md:p-8 flex flex-col items-center max-w-5xl mx-auto anim-fade hide-scroll">
                     
-                    <div className="w-full flex flex-col md:flex-row items-center justify-between bg-white rounded-[2.5rem] p-6 shadow-xl border-4 border-slate-50 mb-10 gap-6">
+                    <div className="w-full flex flex-col md:flex-row items-center justify-between bg-white rounded-[2.5rem] p-6 shadow-xl border-4 border-slate-50 mb-6 gap-6">
                         <div className="flex items-center gap-6 w-full md:w-auto">
                             <div className="bg-gradient-to-br from-rose-500 to-red-600 text-white px-8 py-4 rounded-[2rem] flex flex-col items-center justify-center shadow-lg transform -rotate-2">
                                 <span className="text-[11px] font-black uppercase tracking-widest opacity-90 mb-1">Sınava Kalan</span>
@@ -275,7 +289,7 @@
                             </div>
                             <div>
                                 <h1 className="text-3xl font-black text-slate-800 brand leading-tight">DENEME ÜSSÜ</h1>
-                                <div className="text-indigo-600 font-black text-sm tracking-widest uppercase">Barış Akademi 2026</div>
+                                <div className="text-indigo-600 font-black text-sm tracking-widest uppercase">Barış Akademi V50</div>
                             </div>
                         </div>
 
@@ -289,6 +303,31 @@
                                 {keyStatus==='checking' ? '...' : keyStatus==='valid' ? 'BAĞLI ✅' : 'BAĞLAN'}
                             </button>
                         </div>
+                    </div>
+
+                    {/* BARIŞ HOCA ÖZEL: RİSK ALARMI PANELI */}
+                    {riskliKonu && (
+                        <div className="w-full bg-red-50 border-4 border-red-200 rounded-[2.5rem] p-6 mb-8 flex flex-col md:flex-row items-center justify-between shadow-sm anim-fade relative overflow-hidden">
+                            <div className="absolute -right-4 -top-4 text-red-100 opacity-50"><Icon name="siren" size={120} /></div>
+                            <div className="flex items-center gap-4 relative z-10 w-full md:w-auto mb-4 md:mb-0">
+                                <div className="bg-red-500 text-white p-4 rounded-full animate-pulse shadow-md"><Icon name="alert-triangle" size={32}/></div>
+                                <div>
+                                    <h3 className="font-black text-red-800 text-lg">Kritik Risk Tespit Edildi!</h3>
+                                    <p className="text-red-600 text-sm font-bold">Önceki denemelerde <strong className="bg-red-200 px-2 rounded">"{riskliKonu}"</strong> konusunda çok hata yaptınız.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-2 relative z-10 w-full md:w-auto">
+                                <button onClick={()=>handleAction('hap', riskliKonu)} className="flex-1 md:flex-none bg-white text-red-600 border-2 border-red-200 px-6 py-3 rounded-xl font-black text-sm hover:bg-red-100 transition shadow-sm"><Icon name="zap" size={16} className="inline mr-1 mb-0.5"/> Hızlı Tekrar</button>
+                                <button onClick={()=>handleAction('duel', riskliKonu)} className="flex-1 md:flex-none bg-red-600 text-white px-6 py-3 rounded-xl font-black text-sm hover:bg-red-700 transition shadow-sm"><Icon name="swords" size={16} className="inline mr-1 mb-0.5"/> Karıştırılanlar</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* BARIŞ HOCA ÖZEL: AGS SÖZEL MANTIK BUTONU EKLENDİ */}
+                    <div className="w-full flex justify-end mb-4">
+                        <button onClick={()=>handleAction('ags_logic', 'AGS Sözel Mantık')} className="bg-sky-100 text-sky-700 border-2 border-sky-300 px-6 py-2 rounded-2xl font-black text-sm hover:bg-sky-200 transition shadow-sm flex items-center">
+                            <Icon name="brain-circuit" size={18} className="mr-2"/> AGS Sözel Mantık Atölyesi
+                        </button>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
@@ -467,37 +506,66 @@
             const [quizData, setQuizData] = useState([]);
             const [cardData, setCardData] = useState([]);
             const [errors, setErrors] = useState(JSON.parse(localStorage.getItem('baris_errors')||'[]'));
+            const [stats, setStats] = useState(JSON.parse(localStorage.getItem('baris_stats')||'{}'));
+            const [lastStudied, setLastStudied] = useState(JSON.parse(localStorage.getItem('baris_last_study')||'{}'));
+            const [activeTopic, setActiveTopic] = useState("Genel");
 
             const daysLeft = Math.ceil((new Date('2026-07-12') - new Date()) / (1000 * 60 * 60 * 24));
-            useEffect(()=>{localStorage.setItem('baris_errors', JSON.stringify(errors))},[errors]);
+            
+            useEffect(()=>{
+                localStorage.setItem('baris_errors', JSON.stringify(errors));
+                localStorage.setItem('baris_stats', JSON.stringify(stats));
+                localStorage.setItem('baris_last_study', JSON.stringify(lastStudied));
+            },[errors, stats, lastStudied]);
+
+            const trackError = (topic) => {
+                const newStats = {...stats};
+                const key = topic.split('.')[0].trim();
+                newStats[key] = (newStats[key] || 0) + 1;
+                setStats(newStats);
+            };
+
+            const recordStudy = (topic) => {
+                const newLast = {...lastStudied};
+                newLast[topic] = new Date().toISOString();
+                setLastStudied(newLast);
+            };
 
             const handleAction = async (type, topic) => {
-                if(!apiKey) return alert("Anahtar giriniz!");
-                if(!modelName) return alert("Model adı giriniz!");
+                if(!apiKey) return alert("Hocam önce ayarlardan API anahtarını bağlayalım!");
                 setLoading(true);
+                setActiveTopic(topic);
+                recordStudy(topic);
                 try {
-                    const prompt = type==='hap' ? `Konu: '${topic}'. KPSS ve Okul Öncesi ÖABT için sınavda çıkma ihtimali çok yüksek olan 5 kritik hap bilgi. HTML <strong>, <em> kullan.`:
-                                   type==='ozet' ? `Konu: '${topic}'. Okul Öncesi ÖABT seviyesinde, sınavda atama getirecek detaylı özet. HTML <h3>, <strong> kullan.`:
-                                   type==='card' ? `Konu: '${topic}'. Okul Öncesi ÖABT sınavında en çok karıştırılan 10 kart. JSON Array formatında: [{"front":"...", "back":"..."}]`:
-                                   `Konu: '${topic}'. Okul Öncesi ÖABT sınavı formatında, tam ÖSYM zorluğunda 10 adet çoktan seçmeli soru hazırla. Zorluk: ÖABT/KPSS. Format: JSON Array olarak şu yapıda olsun: [{"q":"Soru metni","opts":["Seçenek1","Seçenek2","Seçenek3","Seçenek4","Seçenek5"],"ans":0,"exp":"Açıklama"}]. "ans" 0 ile 4 arasında sayı olmalı (0=A, 1=B...). Sadece JSON ver.`;
+                    let prompt = "";
+                    const renkliKural = "HTML etiketleri kullan. <strong> (önemli yerler için), <em> (uyarılar için) etiketlerini bolca kullanarak metni rengarenk, vurgulu ve görsel olarak akılda kalıcı yap. Maddeleri <ul> ve <li> ile yaz.";
                     
-                    const res = await callGoogle(apiKey, modelName, prompt + (type==='card'||type==='test'?'': ' HTML formatında ver.'), type==='card'||type==='test'?'json':'html');
+                    if(type==='hap') prompt = `Konu: '${topic}'. KPSS/ÖABT için ÖSYM'nin en çok sorduğu, çeldiricisi en yüksek 5 kritik 'Atama Getiren' bilgi. ${renkliKural}`;
+                    if(type==='ozet') prompt = `Konu: '${topic}'. Okul Öncesi ÖABT derinliğinde detaylı özet. Sıkıcı düz metinler yazma. ${renkliKural} Ana başlıkları <h3> yap.`;
+                    if(type==='card') prompt = `Konu: '${topic}'. Bu konuda en çok karıştırılan kavram çiftleri. JSON Array: [{"front":"...", "back":"..."}]`;
+                    if(type==='test') prompt = `Konu: '${topic}'. Tam ÖSYM standardında, öncüllü (I, II, III) ve zor 5 soru. SADECE JSON: [{"q":"...","opts":["..."],"ans":0,"exp":"..."}]`;
+                    if(type==='duel') prompt = `Konu: '${topic}'. Bu kavramın 'en çok karıştırıldığı' rakip kavramı bul. İkisi arasındaki hayati farkları, ÖSYM'nin tuzaklarını <table>, <tr>, <th>, <td> etiketleri ile çok şık bir tablo olarak çiz. ${renkliKural}`;
+                    if(type==='hafiza') prompt = `Konu: '${topic}'. Bu konuyu ezberlemek için KPSS/ÖABT öğrencilerinin kullandığı absürt, komik, akılda kalıcı akrostişler, şifreler veya 'Hafıza Çivileri' üret. ${renkliKural}`;
+                    if(type==='ags_logic') prompt = `Barış Hocam için AGS tarzı bir 'Sözel Mantık' kurgusu hazırla. Hikaye, öncüller ve 4 adet soru olsun. Çözümde tabloyu nasıl kurması gerektiğini de anlat. ${renkliKural}`;
+
+                    const res = await callGoogle(apiKey, modelName, prompt, (type==='card'||type==='test')?'json':'html');
                     
-                    if(type==='hap'||type==='ozet') setModalData({type:'info', title:topic, content:res});
+                    if(type==='hap'||type==='ozet'||type==='duel'||type==='ags_logic'||type==='hafiza') setModalData({type:'info', title: type==='hafiza' ? '🧠 Hafıza Çivisi: ' + topic : topic === 'AGS Sözel Mantık' ? 'AGS Mantık Atölyesi' : topic, content:res});
                     else if(type==='card') { setCardData(res); setView('flashcards'); }
                     else { setQuizData(res); setView('quiz'); }
-                } catch(e) { alert("Bir hata oluştu. Lütfen tekrar dene."); console.error(e); } finally { setLoading(false); }
+                } catch(e) { alert("Yapay zeka yoruldu hocam, bir daha deneyelim!"); console.error(e); } finally { setLoading(false); }
             };
 
             const startTrial = async (conf) => {
                 if(!apiKey) return alert("Anahtar giriniz!"); 
                 if(!modelName) return alert("Model adı giriniz!");
                 setLoading(true);
+                setActiveTopic(conf.type);
                 try {
-                    const prompt = `Sen ordinaryüs profesör seviyesinde bir KPSS/ÖABT ve AGS (Akademi Giriş Sınavı) uzmanısın. Kullanıcının seçtiği alan: "${conf.type}". Bu alanda tam ÖSYM zorluğunda ${conf.count} adet deneme sorusu yaz. Stratejin/Zorluk Seviyen: "${conf.strategy}". SADECE JSON GÖNDER. Format: [{"q":"Soru","opts":["A","B","C","D","E"],"ans":0,"exp":"Bu konuyu ZİHİN HARİTASI mantığıyla, HTML <strong>, <em>, <ul> ve emojiler kullanarak detaylıca açıkla. Doğru ve yanlış cevapların nedenlerini net belirt. Akılda kalıcı hafıza çivisi ekle."}]`;
+                    const prompt = `Sen ordinaryüs profesör seviyesinde bir KPSS/ÖABT ve AGS uzmanısın. Alan: "${conf.type}". Zorluğunda ${conf.count} adet deneme sorusu yaz. Stratejin: "${conf.strategy}". SADECE JSON GÖNDER. Format: [{"q":"Soru","opts":["A","B","C","D","E"],"ans":0,"exp":"HTML <strong>, <em>, <ul> ve emojiler kullanarak detaylıca açıkla."}]`;
                     const res = await callGoogle(apiKey, modelName, prompt, 'json');
                     setQuizData(res); setView('quiz');
-                } catch(e) { alert("Hata."); } finally { setLoading(false); }
+                } catch(e) { alert("Hata oluştu."); } finally { setLoading(false); }
             };
 
             return (
@@ -506,10 +574,10 @@
                     
                     {modalData?.type === 'info' && <InfoModal data={modalData} close={()=>setModalData(null)}/>}
 
-                    {view === 'dashboard' && <Dashboard apiKey={apiKey} setApiKey={setApiKey} modelName={modelName} setModelName={setModelName} changeView={setView} daysLeft={daysLeft}/>}
+                    {view === 'dashboard' && <Dashboard apiKey={apiKey} setApiKey={setApiKey} modelName={modelName} setModelName={setModelName} changeView={setView} daysLeft={daysLeft} stats={stats} handleAction={handleAction}/>}
                     {view === 'syllabus' && <Syllabus apiKey={apiKey} modelName={modelName} goBack={()=>setView('dashboard')} onAction={handleAction}/>}
                     {view === 'trial_setup' && <TrialSetup goBack={()=>setView('dashboard')} startTrial={startTrial}/>}
-                    {view === 'quiz' && <Quiz questions={quizData} goBack={()=>setView('dashboard')} addToErrors={err=>setErrors([err,...errors])} isNotebook={false}/>}
+                    {view === 'quiz' && <Quiz questions={quizData} goBack={()=>setView('dashboard')} addToErrors={err=>{setErrors([err,...errors]); trackError(activeTopic);}} isNotebook={false}/>}
                     {view === 'flashcards' && <Flashcards cards={cardData} goBack={()=>setView('syllabus')}/>}
                     
                     {view === 'errors' && 
@@ -555,4 +623,3 @@
     </script>
 </body>
 </html>
-
