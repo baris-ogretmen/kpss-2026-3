@@ -110,8 +110,8 @@
                         topics: ["1.1. Sözcükte Anlam", "1.2. Cümlede Anlam", "1.3. Paragrafta Anlam", "1.4. Sözel Mantık"]
                     },
                     {
-                        id: 2, title: "Sayısal Yetenek", 
-                        topics: ["2.1. Temel Matematik", "2.2. Problemler", "2.3. Sayısal Mantık", "2.4. Grafik ve Tablo Yorumlama"]
+                        id: 2, title: "Sayısal Yetenek & İleri Matematik", 
+                        topics: ["2.1. Temel Kavramlar ve Çözümleme", "2.2. Rasyonel ve Ondalık Sayılar", "2.3. Üslü Sayılar (Derinlemesine)", "2.4. Köklü Sayılar ve Eşlenik", "2.5. Mutlak Değer ve Eşitsizlikler", "2.6. Çarpanlara Ayırma ve Özdeşlikler", "2.7. Problemler (Yaş, İşçi, Hız vb.)", "2.8. Sayısal Mantık", "2.9. Grafik ve Tablo Yorumlama"]
                     },
                     {
                         id: 3, title: "Tarih", 
@@ -414,7 +414,7 @@
             );
         };
 
-        const Quiz = ({ questions, goBack, addToErrors, isNotebook }) => {
+       const Quiz = ({ questions, goBack, addToErrors, isNotebook }) => {
             const [idx, setIdx] = useState(0);
             const [show, setShow] = useState(false);
             const [score, setScore] = useState(0);
@@ -432,32 +432,56 @@
             
             return (
                 <div className="h-full flex flex-col bg-slate-100 p-4 md:p-8 anim-fade">
-                    <div className="flex justify-between items-center mb-6 max-w-4xl mx-auto w-full">
+                    <div className="flex justify-between items-center mb-6 max-w-7xl mx-auto w-full">
                         <button onClick={goBack} className="bg-white px-6 py-3 rounded-2xl font-black text-slate-600 hover:text-red-600 shadow-md transition">Sınavı Bitir</button>
                         <div className="bg-indigo-600 px-6 py-3 rounded-2xl font-black text-white shadow-md text-lg tracking-widest">SORU {idx+1} / {questions.length}</div>
                     </div>
-                    <div className="flex-1 overflow-y-auto max-w-4xl mx-auto w-full hide-scroll pb-10">
-                        <div className="bg-white p-8 md:p-12 rounded-[3rem] shadow-xl border-2 border-slate-100 mb-8 relative">
-                            <div className="absolute top-0 left-8 w-16 h-8 bg-indigo-100 rounded-b-xl flex items-center justify-center"><Icon name="help-circle" className="text-indigo-500"/></div>
-                            <p className="font-bold text-xl md:text-2xl text-slate-800 leading-relaxed mt-4">{q.q}</p>
-                        </div>
-                        <div className="space-y-4">
-                            {q.opts.map((o,i)=>
-                                <button key={i} onClick={()=>handleAns(i)} disabled={show} className={`w-full text-left p-6 rounded-[2rem] border-4 font-bold text-lg transition-all shadow-sm ${show?(i===q.ans?'border-emerald-500 bg-emerald-50 text-emerald-800':i!==q.ans&&'opacity-40 bg-white border-slate-100 text-slate-400'):'border-white bg-white text-slate-700 hover:border-indigo-300 hover:shadow-md'}`}>
-                                    <span className={`inline-block w-8 h-8 text-center leading-8 rounded-full mr-4 text-sm ${show&&i===q.ans?'bg-emerald-500 text-white':'bg-slate-100 text-slate-500'}`}>{String.fromCharCode(65+i)}</span>
-                                    {o}
-                                </button>
-                            )}
-                        </div>
-                        {show && 
-                            <div className="mt-10 p-8 md:p-10 bg-indigo-50 border-4 border-indigo-200 rounded-[3rem] text-slate-800 shadow-xl anim-fade relative overflow-hidden">
-                                <div className="absolute top-0 right-0 bg-indigo-200 text-indigo-800 font-black text-[10px] px-4 py-2 rounded-bl-2xl uppercase tracking-widest"><Icon name="brain" size={14} className="inline mb-0.5 mr-1"/> Yapay Zeka Çözümü</div>
-                                <div className="readable-text text-lg mt-4" dangerouslySetInnerHTML={{__html: q.exp}}></div>
+                    <div className="flex-1 overflow-y-auto max-w-7xl mx-auto w-full hide-scroll pb-10">
+                        
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                            {/* SOL PANEL: DENEME SORUSU */}
+                            <div className="lg:col-span-7 space-y-6">
+                                <div className="bg-white p-8 md:p-10 rounded-[3rem] shadow-xl border-2 border-slate-100 relative">
+                                    <div className="absolute top-0 left-8 w-16 h-8 bg-indigo-100 rounded-b-xl flex items-center justify-center"><Icon name="help-circle" className="text-indigo-500"/></div>
+                                    <p className="font-bold text-xl text-slate-800 leading-relaxed mt-4 whitespace-pre-wrap">{q.q}</p>
+                                </div>
+                                
+                                <div className="space-y-3">
+                                    {q.opts.map((o,i)=>
+                                        <button key={i} onClick={()=>handleAns(i)} disabled={show} className={`w-full text-left p-5 rounded-[2rem] border-4 font-bold text-lg transition-all shadow-sm ${show?(i===q.ans?'border-emerald-500 bg-emerald-50 text-emerald-800':i!==q.ans&&'opacity-40 bg-white border-slate-100 text-slate-400'):'border-white bg-white text-slate-700 hover:border-indigo-300 hover:shadow-md'}`}>
+                                            <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full mr-4 text-sm ${show&&i===q.ans?'bg-emerald-500 text-white':'bg-slate-100 text-slate-500'}`}>{String.fromCharCode(65+i)}</span>
+                                            {o}
+                                        </button>
+                                    )}
+                                </div>
+
+                                {show && 
+                                    <div className="mt-8 p-8 bg-indigo-50 border-4 border-indigo-200 rounded-[3rem] text-slate-800 shadow-xl anim-fade relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 bg-indigo-200 text-indigo-800 font-black text-[10px] px-4 py-2 rounded-bl-2xl uppercase tracking-widest"><Icon name="brain" size={14} className="inline mb-0.5 mr-1"/> Çözüm</div>
+                                        <div className="readable-text text-base mt-2" dangerouslySetInnerHTML={{__html: q.exp}}></div>
+                                    </div>
+                                }
                             </div>
-                        }
+
+                            {/* SAĞ PANEL: ÖSYM SİMÜLASYONU VE TUZAK ANALİZİ */}
+                            <div className="lg:col-span-5">
+                                <div className="bg-amber-50 border-4 border-amber-200 p-8 rounded-[3rem] shadow-xl relative sticky top-0">
+                                    <div className="absolute top-0 right-8 bg-amber-500 text-white font-black text-xs px-4 py-2 rounded-b-xl uppercase tracking-widest shadow-md">ÖSYM NE SORMUŞTU?</div>
+                                    
+                                    <h3 className="text-xl font-black text-amber-900 mt-6 mb-4 flex items-center"><Icon name="history" className="mr-2 text-amber-600"/> Çıkmış Soru Simülasyonu</h3>
+                                    <p className="text-amber-800 font-semibold leading-relaxed mb-6 whitespace-pre-wrap">{q.osym_q || "Bu konudan çıkmış benzer bir soru simülasyonu yükleniyor..."}</p>
+                                    
+                                    <div className="bg-white p-6 rounded-3xl border-2 border-amber-100 shadow-sm">
+                                        <h4 className="text-sm font-black text-rose-600 uppercase tracking-widest mb-3 flex items-center"><Icon name="alert-triangle" size={16} className="mr-2"/> ÖSYM Tuzağı</h4>
+                                        <p className="text-slate-700 font-medium text-sm leading-relaxed">{q.osym_analizi || "ÖSYM'nin bu formattaki klasik tuzak ve çeldiricilerine dikkat edin."}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                     {show && 
-                        <div className="max-w-4xl mx-auto w-full pt-4">
+                        <div className="max-w-7xl mx-auto w-full pt-4">
                             <button onClick={()=>{if(idx<questions.length-1){setIdx(idx+1);setShow(false)}else{alert(`Sınav Bitti! Puanın: ${score}/${questions.length}`);goBack()}}} className="w-full bg-slate-800 text-white py-6 rounded-[2rem] font-black text-2xl shadow-2xl hover:bg-black transition active:scale-95 flex justify-center items-center gap-3 border-4 border-slate-700">
                                 {idx<questions.length-1 ? 'SIRADAKİ SORU' : 'SONUÇLARI GÖR'} <Icon name="arrow-right" size={28}/>
                             </button>
@@ -562,7 +586,9 @@
                 setLoading(true);
                 setActiveTopic(conf.type);
                 try {
-                    const prompt = `Sen ordinaryüs profesör seviyesinde bir KPSS/ÖABT ve AGS uzmanısın. Alan: "${conf.type}". Zorluğunda ${conf.count} adet deneme sorusu yaz. Stratejin: "${conf.strategy}". SADECE JSON GÖNDER. Format: [{"q":"Soru","opts":["A","B","C","D","E"],"ans":0,"exp":"HTML <strong>, <em>, <ul> ve emojiler kullanarak detaylıca açıkla."}]`;
+                    const prompt = `Sen ordinaryüs profesör seviyesinde bir KPSS/ÖABT ve AGS uzmanısın. Alan: "${conf.type}". Seçilen stratejiye uygun "${conf.strategy}" zorluğunda ${conf.count} adet deneme sorusu yaz. 
+                    MUAZZAM KURAL: Hazırladığın her deneme sorusu için bir de o konuya benzeyen 'Sınavda Çıkmış Soru Simülasyonu' (osym_q) ve ÖSYM'nin o konuda adayları nasıl elediğini anlatan 'ÖSYM Tuzağı Analizi' (osym_analizi) üreteceksin! 
+                    SADECE JSON GÖNDER. Format: [{"q":"Ana Soru","opts":["A","B","C","D","E"],"ans":0,"exp":"HTML <strong>, <em>, <ul> ve emojiler kullanarak detaylıca açıkla.","osym_q":"Bu konuya benzer çıkmış veya çıkabilecek ÖSYM tarzı soru simülasyonu...","osym_analizi":"ÖSYM bu konuda öğrencileri hangi kelime oyunlarıyla veya mantıkla düşürür?"}]`;
                     const res = await callGoogle(apiKey, modelName, prompt, 'json');
                     setQuizData(res); setView('quiz');
                 } catch(e) { alert("Hata oluştu."); } finally { setLoading(false); }
