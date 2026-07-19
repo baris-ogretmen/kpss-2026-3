@@ -44,7 +44,7 @@
 <body>
     <div id="root"></div>
 
-    <!-- ===== ZİRVE API KATMANI · şık modal panel + sınırsız görünür anahtar + otomatik model + 503 dayanıklılığı ===== -->
+    <!-- ===== ZİRVE API KATMANI · modal panel + sınırsız görünür anahtar + otomatik model + 503 dayanıklılığı ===== -->
 <script>
 /* ============================================================
    ZİRVE API KATMANI  ·  çoklu anahtar + otomatik model + teşhis
@@ -1116,7 +1116,7 @@ window.ZIRVE = { RING, get model(){return MODEL;}, set model(m){ MODEL=m; localS
                                     <div className="absolute top-0 right-8 bg-amber-500 text-white font-black text-xs px-4 py-2 rounded-b-xl uppercase tracking-widest shadow-md">ÖSYM NE SORMUŞTU?</div>
                                     
                                     <h3 className="text-xl font-black text-amber-900 mt-6 mb-4 flex items-center"><Icon name="history" className="mr-2 text-amber-600"/> Çıkmış Soru Simülasyonu</h3>
-                                    <p className="text-amber-800 font-semibold leading-relaxed mb-6 whitespace-pre-wrap">{q.osym_q || "Bu konudan çıkmış benzer bir soru simülasyonu yükleniyor..."}</p>
+                                    <p className="text-amber-800 font-semibold leading-relaxed mb-6 whitespace-pre-wrap">{q.osym_q || "Bu soru için çıkmış-soru simülasyonu üretilemedi. \"Sıradaki Soru\"ya geçip tekrar deneyebilir ya da soruyu yeniden üretebilirsin."}</p>
                                     
                                     <div className="bg-white p-6 rounded-3xl border-2 border-amber-100 shadow-sm">
                                         <h4 className="text-sm font-black text-rose-600 uppercase tracking-widest mb-3 flex items-center"><Icon name="alert-triangle" size={16} className="mr-2"/> ÖSYM Tuzağı</h4>
@@ -1181,7 +1181,7 @@ window.ZIRVE = { RING, get model(){return MODEL;}, set model(m){ MODEL=m; localS
             const [lastStudied, setLastStudied] = useState(JSON.parse(localStorage.getItem('baris_last_study')||'{}'));
             const [activeTopic, setActiveTopic] = useState("Genel");
 
-            const daysLeft = Math.ceil((new Date('2026-07-12') - new Date()) / (1000 * 60 * 60 * 24));
+            const daysLeft = Math.ceil((new Date('2026-07-26') - new Date()) / (1000 * 60 * 60 * 24));
             
             useEffect(()=>{
                 localStorage.setItem('baris_errors', JSON.stringify(errors));
@@ -1234,7 +1234,7 @@ window.ZIRVE = { RING, get model(){return MODEL;}, set model(m){ MODEL=m; localS
                 setActiveTopic(conf.type);
                 try {
                     const prompt = `Sen ordinaryüs profesör seviyesinde bir KPSS/ÖABT ve AGS uzmanısın. Alan: "${conf.type}". Seçilen stratejiye uygun "${conf.strategy}" zorluğunda ${conf.count} adet deneme sorusu yaz. 
-                    MUAZZAM KURAL: Hazırladığın her deneme sorusu için bir de o konuya benzeyen 'Sınavda Çıkmış Soru Simülasyonu' (osym_q) ve ÖSYM'nin o konuda adayları nasıl elediğini anlatan 'ÖSYM Tuzağı Analizi' (osym_analizi) üreteceksin! 
+                    MUTLAK ZORUNLU KURAL: Her soru nesnesinde 'osym_q' ve 'osym_analizi' alanları KESİNLİKLE dolu olacak; ASLA boş bırakma, atlamaya çalışma. 'osym_q' o konuya benzeyen gerçekçi bir ÖSYM tarzı çıkmış soru simülasyonu (soru kökü + şıklar dahil), 'osym_analizi' ise ÖSYM'nin o konuda adayları hangi kelime oyunu/çeldiriciyle elediğidir. Bu iki alan eksikse cevap geçersizdir. 
                     SADECE JSON GÖNDER. Format: [{"q":"Ana Soru","opts":["A","B","C","D","E"],"ans":0,"exp":"HTML <strong>, <em>, <ul> ve emojiler kullanarak detaylıca açıkla.","osym_q":"Bu konuya benzer çıkmış veya çıkabilecek ÖSYM tarzı soru simülasyonu...","osym_analizi":"ÖSYM bu konuda öğrencileri hangi kelime oyunlarıyla veya mantıkla düşürür?"}]`;
                     const res = await callGoogle(apiKey, modelName, prompt, 'json');
                     setQuizData(res); setView('quiz');
