@@ -44,7 +44,7 @@
 <body>
     <div id="root"></div>
 
-    <!-- ===== ZİRVE API KATMANI · gizlenebilir buton + mini test osym_q + modal + sınırsız anahtar + 503 ===== -->
+    <!-- ===== ZİRVE API KATMANI · gizlenebilir buton + osym_cevap + akıllı model zinciri + 503 ===== -->
 <script>
 /* ============================================================
    ZİRVE API KATMANI  ·  çoklu anahtar + otomatik model + teşhis
@@ -118,9 +118,8 @@ function ringBekleme(m){
 // GERÇEKTEN erişebildiği modeller öğrenilir ve zincir ona göre kurulur; böylece
 // var olmayan bir model adına düşmeyiz.
 const MODEL_TERCIH = [
-  "gemini-2.5-flash-lite", "gemini-flash-lite-latest",
   "gemini-2.5-flash", "gemini-flash-latest",
-  "gemini-2.0-flash-lite", "gemini-2.0-flash",
+  "gemini-2.5-flash-lite", "gemini-flash-lite-latest",
   "gemini-2.5-pro", "gemini-pro-latest"
 ];
 let KULLANILABILIR = [];
@@ -298,7 +297,7 @@ window.fetch = async function(input, init){
        orjGovde.generationConfig.responseMimeType==='application/json' &&
        !orjGovde.generationConfig.responseSchema){
       const istekStr = JSON.stringify(orjGovde.contents||'');
-      if(/osym_q|osym_analizi/.test(istekStr)){
+      if(/osym_q|osym_cevap|osym_analizi/.test(istekStr)){
         orjGovde.generationConfig.responseSchema = {
           type:"ARRAY",
           items:{ type:"OBJECT",
@@ -308,9 +307,10 @@ window.fetch = async function(input, init){
               ans:{type:"INTEGER"},
               exp:{type:"STRING"},
               osym_q:{type:"STRING"},
+              osym_cevap:{type:"STRING"},
               osym_analizi:{type:"STRING"}
             },
-            required:["q","opts","ans","exp","osym_q","osym_analizi"]
+            required:["q","opts","ans","exp","osym_q","osym_cevap","osym_analizi"]
           }
         };
         init = Object.assign({}, init, {body: JSON.stringify(orjGovde)});
@@ -1221,7 +1221,12 @@ window.ZIRVE = { RING, get model(){return MODEL;}, set model(m){ MODEL=m; localS
                                     <div className="absolute top-0 right-8 bg-amber-500 text-white font-black text-xs px-4 py-2 rounded-b-xl uppercase tracking-widest shadow-md">ÖSYM NE SORMUŞTU?</div>
                                     
                                     <h3 className="text-xl font-black text-amber-900 mt-6 mb-4 flex items-center"><Icon name="history" className="mr-2 text-amber-600"/> Çıkmış Soru Simülasyonu</h3>
-                                    <p className="text-amber-800 font-semibold leading-relaxed mb-6 whitespace-pre-wrap">{q.osym_q || "Bu soru için çıkmış-soru simülasyonu üretilemedi. \"Sıradaki Soru\"ya geçip tekrar deneyebilir ya da soruyu yeniden üretebilirsin."}</p>
+                                    <p className="text-amber-800 font-semibold leading-relaxed mb-4 whitespace-pre-wrap">{q.osym_q || "Bu soru için çıkmış-soru simülasyonu üretilemedi. \"Sıradaki Soru\"ya geçip tekrar deneyebilir ya da soruyu yeniden üretebilirsin."}</p>
+                                    
+                                    {q.osym_cevap && <div className="bg-emerald-50 border-2 border-emerald-200 p-4 rounded-2xl mb-4">
+                                        <h4 className="text-sm font-black text-emerald-700 uppercase tracking-widest mb-2 flex items-center"><Icon name="check-circle" size={16} className="mr-2"/> Cevap & Açıklama</h4>
+                                        <p className="text-emerald-900 font-semibold text-sm leading-relaxed whitespace-pre-wrap">{q.osym_cevap}</p>
+                                    </div>}
                                     
                                     <div className="bg-white p-6 rounded-3xl border-2 border-amber-100 shadow-sm">
                                         <h4 className="text-sm font-black text-rose-600 uppercase tracking-widest mb-3 flex items-center"><Icon name="alert-triangle" size={16} className="mr-2"/> ÖSYM Tuzağı</h4>
@@ -1314,12 +1319,12 @@ window.ZIRVE = { RING, get model(){return MODEL;}, set model(m){ MODEL=m; localS
                 recordStudy(topic);
                 try {
                     let prompt = "";
-                    const renkliKural = "HTML etiketleri kullan. <strong> (önemli yerler için), <em> (uyarılar için) etiketlerini bolca kullanarak metni rengarenk, vurgulu ve görsel olarak akılda kalıcı yap. Maddeleri <ul> ve <li> ile yaz.";
+                    const renkliKural = "SEN 2026 MEB-AGS ve ABT Okul Oncesi uzmanisin. Icerik GUNCEL, DOGRU ve gercekten 26 Temmuz 2026 sinavinda ise yarayacak nitelikte olsun; asla eski/yanlis/uydurma bilgi verme, formalite icabi doldurma yapma. Sadece o konunun OSYM tarafindan sorulan kritik noktalarina odaklan. HTML etiketleri kullan: <strong> (onemli yerler), <em> (uyarilar), <mark> (kilit kavram) bolca; metni rengarenk, vurgulu, akilda kalici yap; maddeleri <ul> ve <li> ile yaz.";
                     
                     if(type==='hap') prompt = `Konu: '${topic}'. KPSS/ÖABT için ÖSYM'nin en çok sorduğu, çeldiricisi en yüksek 5 kritik 'Atama Getiren' bilgi. ${renkliKural}`;
                     if(type==='ozet') prompt = `Konu: '${topic}'. Okul Öncesi ÖABT derinliğinde detaylı özet. Sıkıcı düz metinler yazma. ${renkliKural} Ana başlıkları <h3> yap.`;
                     if(type==='card') prompt = `Konu: '${topic}'. Bu konuda en çok karıştırılan kavram çiftleri. JSON Array: [{"front":"...", "back":"..."}]`;
-                    if(type==='test') prompt = `Konu: '${topic}'. Tam ÖSYM standardında, öncüllü (I, II, III) ve zor 5 soru. MUTLAK ZORUNLU KURAL: Her soru nesnesinde 'osym_q' ve 'osym_analizi' alanları KESİNLİKLE dolu olacak; ASLA boş bırakma. 'osym_q' o konuya benzeyen gerçekçi bir ÖSYM tarzı çıkmış soru simülasyonu (soru kökü + şıklar dahil), 'osym_analizi' ise ÖSYM'nin o konuda adayları hangi çeldiriciyle elediğidir. SADECE JSON GÖNDER: [{"q":"Ana Soru","opts":["A","B","C","D","E"],"ans":0,"exp":"HTML ile detaylı açıklama","osym_q":"Benzer ÖSYM tarzı çıkmış soru (şıklar dahil)","osym_analizi":"ÖSYM bu konuda hangi tuzakla düşürür?"}]`;
+                    if(type==='test') prompt = `Konu: '${topic}'. Sen 2026 MEB-AGS ve ÖABT (Okul Öncesi) sınavına hazırlayan uzman bir eğitimcisin. GÜNCEL ÖSYM formatında, öncüllü (I, II, III) yapıda, gerçekten sınavda çıkabilecek nitelikte 5 zor ve nitelikli soru yaz. Formalite/kolay/saçma soru YAZMA. MUTLAK ZORUNLU KURALLAR: (1) Her soruda 'osym_q' (o konuya benzeyen gerçekçi ÖSYM tarzı çıkmış soru, ŞIKLARIYLA A-E), 'osym_cevap' (bu çıkmış sorunun DOĞRU şıkkı harf olarak + neden doğru olduğunun kısa açıklaması), 'osym_analizi' (ÖSYM'nin bu konuda adayları hangi çeldiriciyle elediği) alanları KESİNLİKLE dolu olacak; ASLA boş bırakma. (2) 'ans' alanı ana sorunun doğru şık indeksidir (0=A). SADECE JSON GÖNDER: [{"q":"Ana Soru","opts":["A) ...","B) ...","C) ...","D) ...","E) ..."],"ans":0,"exp":"HTML ile detaylı açıklama","osym_q":"Benzer ÖSYM tarzı çıkmış soru — A) ... B) ... C) ... D) ... E) ...","osym_cevap":"Doğru cevap: C) ... — çünkü ...","osym_analizi":"ÖSYM bu konuda hangi tuzakla düşürür?"}]`;
                     if(type==='duel') prompt = `Konu: '${topic}'. Bu kavramın 'en çok karıştırıldığı' rakip kavramı bul. İkisi arasındaki hayati farkları, ÖSYM'nin tuzaklarını <table>, <tr>, <th>, <td> etiketleri ile çok şık bir tablo olarak çiz. ${renkliKural}`;
                     if(type==='hafiza') prompt = `Konu: '${topic}'. Bu konuyu ezberlemek için KPSS/ÖABT öğrencilerinin kullandığı absürt, komik, akılda kalıcı akrostişler, şifreler veya 'Hafıza Çivileri' üret. ${renkliKural}`;
                     if(type==='ags_logic') prompt = `Barış Hocam için AGS tarzı bir 'Sözel Mantık' kurgusu hazırla. Hikaye, öncüller ve 4 adet soru olsun. Çözümde tabloyu nasıl kurması gerektiğini de anlat. ${renkliKural}`;
@@ -1329,7 +1334,16 @@ window.ZIRVE = { RING, get model(){return MODEL;}, set model(m){ MODEL=m; localS
                     if(type==='hap'||type==='ozet'||type==='duel'||type==='ags_logic'||type==='hafiza') setModalData({type:'info', title: type==='hafiza' ? '🧠 Hafıza Çivisi: ' + topic : topic === 'AGS Sözel Mantık' ? 'AGS Mantık Atölyesi' : topic, content:res});
                     else if(type==='card') { setCardData(res); setView('flashcards'); }
                     else { setQuizData(res); setView('quiz'); }
-                } catch(e) { alert("Yapay zeka yoruldu hocam, bir daha deneyelim!"); console.error(e); } finally { setLoading(false); }
+                } catch(e) {
+                    const m = (e && e.message) ? e.message : String(e);
+                    let bilgi = "Yapay zeka su an cevap veremedi.";
+                    if(/quota|kota|RESOURCE_EXHAUSTED|per day|PerDay/i.test(m)) bilgi = "Anahtarlarinin GUNLUK/dakikalik kotasi dolmus gorunuyor. Onemli: 3 anahtarin da AYNI Google projesindeyse ayni kotayi paylasir. Anahtarlari AYRI projelerde (veya ayri Google hesaplarinda) acarsan her biri kendi kotasini alir.";
+                    else if(/overloaded|503|demand|yogun/i.test(m)) bilgi = "Google sunuculari su an cok yogun (503). Bu senin anahtarinla ilgili degil. 1-2 dakika sonra tekrar dene.";
+                    else if(/API key|API_KEY|invalid|403|PERMISSION/i.test(m)) bilgi = "API anahtari gecersiz ya da bu modele erisim yok. Sag alttaki key panelinden 'Test Et' ile anahtarlarini dogrula.";
+                    else if(/network|Failed to fetch|timeout|zaman/i.test(m)) bilgi = "Internet baglantisi kesildi veya cok yavas. Baglantini kontrol edip tekrar dene.";
+                    alert("Yapay zeka yoruldu hocam!\n\n" + bilgi + "\n\n(Teknik: " + m.slice(0,180) + ")");
+                    console.error(e);
+                } finally { setLoading(false); }
             };
 
             const startTrial = async (conf) => {
@@ -1340,11 +1354,19 @@ window.ZIRVE = { RING, get model(){return MODEL;}, set model(m){ MODEL=m; localS
                 try {
                     const dagilimNotu = conf.type.includes("Okul Öncesi ÖABT") ? " ÖNEMLİ: Okul Öncesi ÖABT resmi yapısı 30 Alan Bilgisi + 20 Alan Eğitimi = 50 sorudur; ürettiğin sorular bu iki bölümün konularına dengeli dağılsın." : conf.type.includes("TAM DENEME · AGS") ? " ÖNEMLİ: AGS 80 soruluk yapıdadır; Sözel/Sayısal Yetenek, Tarih, Coğrafya, Vatandaşlık, Eğitim Bilimleri ve Mevzuat konularına dengeli dağılsın." : "";
                     const prompt = `Sen ordinaryüs profesör seviyesinde bir KPSS/ÖABT ve AGS uzmanısın. Alan: "${conf.type}".${dagilimNotu} Seçilen stratejiye uygun "${conf.strategy}" zorluğunda ${conf.count} adet deneme sorusu yaz. 
-                    MUTLAK ZORUNLU KURAL: Her soru nesnesinde 'osym_q' ve 'osym_analizi' alanları KESİNLİKLE dolu olacak; ASLA boş bırakma, atlamaya çalışma. 'osym_q' o konuya benzeyen gerçekçi bir ÖSYM tarzı çıkmış soru simülasyonu (soru kökü + şıklar dahil), 'osym_analizi' ise ÖSYM'nin o konuda adayları hangi kelime oyunu/çeldiriciyle elediğidir. Bu iki alan eksikse cevap geçersizdir. 
-                    SADECE JSON GÖNDER. Format: [{"q":"Ana Soru","opts":["A","B","C","D","E"],"ans":0,"exp":"HTML <strong>, <em>, <ul> ve emojiler kullanarak detaylıca açıkla.","osym_q":"Bu konuya benzer çıkmış veya çıkabilecek ÖSYM tarzı soru simülasyonu...","osym_analizi":"ÖSYM bu konuda öğrencileri hangi kelime oyunlarıyla veya mantıkla düşürür?"}]`;
+                    MUTLAK ZORUNLU KURAL: Her soru nesnesinde 'osym_q', 'osym_cevap' ve 'osym_analizi' alanları KESİNLİKLE dolu olacak; ASLA boş bırakma, atlamaya çalışma. 'osym_q' o konuya benzeyen gerçekçi bir ÖSYM tarzı çıkmış soru simülasyonu (soru kökü + A-E şıkları dahil), 'osym_cevap' bu çıkmış sorunun DOĞRU şıkkı (harf) + neden doğru olduğunun kısa açıklaması, 'osym_analizi' ise ÖSYM'nin o konuda adayları hangi kelime oyunu/çeldiriciyle elediğidir. Bu üç alan eksikse cevap geçersizdir. Sorular 2026 sınavına uygun, GÜNCEL ve gerçekten çıkabilecek nitelikte olsun; formalite/kolay/saçma soru üretme. 
+                    SADECE JSON GÖNDER. Format: [{"q":"Ana Soru","opts":["A","B","C","D","E"],"ans":0,"exp":"HTML <strong>, <em>, <ul> ve emojiler kullanarak detaylıca açıkla.","osym_q":"Bu konuya benzer ÖSYM tarzı soru — A) ... B) ... C) ... D) ... E) ...","osym_cevap":"Doğru cevap: B) ... — çünkü ...","osym_analizi":"ÖSYM bu konuda öğrencileri hangi kelime oyunlarıyla veya mantıkla düşürür?"}]`;
                     const res = await callGoogle(apiKey, modelName, prompt, 'json');
                     setQuizData(res); setView('quiz');
-                } catch(e) { alert("Hata oluştu."); } finally { setLoading(false); }
+                } catch(e) {
+                    const m = (e && e.message) ? e.message : String(e);
+                    let bilgi = "Deneme hazirlanamadi.";
+                    if(/quota|kota|RESOURCE_EXHAUSTED|per day|PerDay/i.test(m)) bilgi = "Kotan dolmus olabilir. 3 anahtarin AYNI projedeyse ayni kotayi paylasir; ayri projelerde acmayi dene. Ayrica soru sayisini dusurmek (20-25) yardimci olur.";
+                    else if(/overloaded|503|demand|yogun/i.test(m)) bilgi = "Google sunuculari yogun (503). 1-2 dakika sonra tekrar 'Baslat'a bas.";
+                    else if(/JSON|parse|Unexpected/i.test(m)) bilgi = "Cevap cok uzun olup yarim geldi. Soru sayisini dusur (orn. 20) ve tekrar dene.";
+                    alert("Sorular hazirlanirken sorun oldu.\n\n" + bilgi + "\n\n(Teknik: " + m.slice(0,180) + ")");
+                    console.error(e);
+                } finally { setLoading(false); }
             };
 
             return (
