@@ -1027,14 +1027,26 @@ window.ZIRVE = { RING, get model(){return MODEL;}, set model(m){ MODEL=m; localS
             const [config, setConfig] = useState({ type: '🔥 Tam Kapsamlı ÖABT Simülasyonu (Alan Bilgisi + Eğitimi)', count: 15, strategy: 'ÖSYM Standart Zorluk' });
             
             const categories = [
-                "🔥 Tam Kapsamlı AGS Simülasyonu (Sözel, Sayısal, Tarih, Coğrafya, Eğitim)",
-                "🔥 Tam Kapsamlı ÖABT Simülasyonu (Alan Bilgisi + Eğitimi)",
-                "🎯 Sadece Eğitim Bilimleri ve ÖMK (Mevzuat)",
-                "ÖABT - Erken Çocukluk Eğitimi & Gelişim Psikolojisi",
-                "ÖABT - Çocuk Sağlığı, İlkyardım ve Ruh Sağlığı",
-                "ÖABT - Anne-Baba Eğitimi ve Çocuk Hakları",
-                "AGS - Sözel ve Sayısal Mantık Nokta Atışı",
-                "AGS - Tarih ve Coğrafya Nokta Atışı"
+                "🔥 TAM DENEME · Okul Öncesi ÖABT (30 Alan Bilgisi + 20 Alan Eğitimi = 50 Soru)",
+                "🔥 TAM DENEME · AGS (80 Soru · Sözel, Sayısal, Tarih, Coğrafya, Vatandaşlık, Eğitim Bilimleri, Mevzuat)",
+                "🎯 ÖABT Alan Bilgisi · Okul Öncesi Eğitime Giriş ve Tarihçe",
+                "🎯 ÖABT Alan Bilgisi · Erken Çocuklukta Gelişim (Fiziksel, Bilişsel, Dil, Sosyal-Duygusal, Ahlak)",
+                "🎯 ÖABT Alan Bilgisi · Anatomi, Fizyoloji ve Psikolojiye Giriş",
+                "🎯 ÖABT Alan Bilgisi · Anne-Çocuk Sağlığı, İlkyardım ve Beslenme",
+                "🎯 ÖABT Alan Bilgisi · Çocukta Oyun Gelişimi ve Kuramları",
+                "🎯 ÖABT Alan Bilgisi · Çocuk Edebiyatı",
+                "🎯 ÖABT Alan Bilgisi · Çocuk Ruh Sağlığı ve Özel Gereksinimli Çocuklar",
+                "🎯 ÖABT Alan Bilgisi · EÇE Yaklaşımları (Montessori, Reggio, Waldorf, HighScope, Bank Street)",
+                "🎯 ÖABT Alan Bilgisi · Anne-Baba Eğitimi ve Aile Katılımı",
+                "📚 ÖABT Alan Eğitimi · Fen ve Matematik Eğitimi",
+                "📚 ÖABT Alan Eğitimi · Müzik ve Görsel Sanatlar Eğitimi",
+                "📚 ÖABT Alan Eğitimi · Beden Eğitimi ve Yaratıcı Drama",
+                "📚 ÖABT Alan Eğitimi · MEB OÖE Programı ve Erken Okuryazarlık",
+                "⚖️ AGS · Eğitim Bilimleri (Öğrenme, ÖYT, Ölçme-Değerlendirme, Rehberlik)",
+                "⚖️ AGS · Mevzuat (1739, 657, ÖMK) Nokta Atışı",
+                "⚖️ AGS · Tarih ve Coğrafya Nokta Atışı",
+                "⚖️ AGS · Vatandaşlık ve Anayasa Nokta Atışı",
+                "⚖️ AGS · Türkçe / Sözel Mantık ve Matematik / Sayısal Mantık"
             ];
 
             const strategies = [
@@ -1088,22 +1100,92 @@ window.ZIRVE = { RING, get model(){return MODEL;}, set model(m){ MODEL=m; localS
             const [idx, setIdx] = useState(0);
             const [show, setShow] = useState(false);
             const [score, setScore] = useState(0);
+            const [answers, setAnswers] = useState({});
+            const [finished, setFinished] = useState(false);
             const q = questions[idx];
             
             const handleAns = (i) => { 
                 if(show) return; 
                 setShow(true); 
+                setAnswers(prev => ({...prev, [idx]: i}));
                 if(i===q.ans) {
                     setScore(score+1); 
                 } else {
                     addToErrors({q:q.q, w:q.opts[i], r:q.opts[q.ans], e:q.exp, t: isNotebook?"Defter":"Deneme"}); 
                 }
             };
+
+            const dogru = Object.keys(answers).filter(k => answers[k]===questions[k].ans).length;
+            const yanlis = Object.keys(answers).filter(k => answers[k]!==questions[k].ans).length;
+            const bos = questions.length - Object.keys(answers).length;
+            const net = Math.max(0, dogru - (yanlis/4));
+            const yuzde = questions.length ? Math.round((net/questions.length)*100) : 0;
+
+            if(finished){
+                return (
+                    <div className="h-full flex flex-col bg-slate-100 p-4 md:p-8 anim-fade overflow-y-auto hide-scroll">
+                        <div className="max-w-4xl mx-auto w-full">
+                            <div className="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-[3rem] p-8 md:p-10 text-white shadow-2xl mb-6 text-center relative overflow-hidden">
+                                <div className="text-indigo-200 font-black uppercase tracking-widest text-sm mb-2">Deneme Sonucun</div>
+                                <div className="text-6xl md:text-7xl font-black brand mb-1">{net.toFixed(2)}</div>
+                                <div className="text-indigo-100 font-bold text-lg mb-6">NET</div>
+                                <div className="grid grid-cols-3 gap-3 max-w-md mx-auto">
+                                    <div className="bg-white/15 rounded-2xl p-3"><div className="text-2xl font-black text-emerald-300">{dogru}</div><div className="text-[11px] font-bold text-indigo-100 uppercase">Doğru</div></div>
+                                    <div className="bg-white/15 rounded-2xl p-3"><div className="text-2xl font-black text-rose-300">{yanlis}</div><div className="text-[11px] font-bold text-indigo-100 uppercase">Yanlış</div></div>
+                                    <div className="bg-white/15 rounded-2xl p-3"><div className="text-2xl font-black text-slate-200">{bos}</div><div className="text-[11px] font-bold text-indigo-100 uppercase">Boş</div></div>
+                                </div>
+                                <div className="mt-6 inline-block bg-white/20 px-6 py-2 rounded-full font-black text-lg">Başarı: %{yuzde}</div>
+                                <div className="mt-3 text-indigo-100 font-semibold text-sm max-w-lg mx-auto">
+                                    {yuzde>=80 ? "🏆 Muhteşem! Bu tempoyla atama senin." : yuzde>=60 ? "💪 İyi gidiyorsun, birkaç konuyu daha sağlamlaştır." : yuzde>=40 ? "📚 Temel oturuyor, eksik konulara odaklan." : "🔥 Vakit az ama pes yok — hatalarını defterden çalış."}
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-[2rem] shadow-xl border-2 border-slate-100 p-6 md:p-8 mb-6">
+                                <h3 className="font-black text-xl text-slate-800 mb-4 flex items-center gap-2"><Icon name="list-checks" className="text-indigo-600"/> Cevap Anahtarı</h3>
+                                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+                                    {questions.map((qq,qi)=>{
+                                        const secilen=answers[qi];
+                                        const durum = secilen===undefined ? 'bos' : (secilen===qq.ans ? 'dogru' : 'yanlis');
+                                        const renk = durum==='dogru'?'bg-emerald-100 border-emerald-300 text-emerald-800':durum==='yanlis'?'bg-rose-100 border-rose-300 text-rose-800':'bg-slate-50 border-slate-200 text-slate-400';
+                                        return <div key={qi} className={`rounded-xl border-2 p-2 text-center ${renk}`}>
+                                            <div className="text-[10px] font-bold opacity-70">{qi+1}.</div>
+                                            <div className="font-black text-lg">{String.fromCharCode(65+qq.ans)}</div>
+                                            {durum==='yanlis' && <div className="text-[9px] font-bold">sen:{String.fromCharCode(65+secilen)}</div>}
+                                            {durum==='bos' && <div className="text-[9px] font-bold">boş</div>}
+                                        </div>;
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-[2rem] shadow-xl border-2 border-slate-100 p-6 md:p-8 mb-6">
+                                <h3 className="font-black text-xl text-slate-800 mb-4 flex items-center gap-2"><Icon name="book-open" className="text-indigo-600"/> Çözümler</h3>
+                                <div className="space-y-6">
+                                    {questions.map((qq,qi)=>{
+                                        const secilen=answers[qi];
+                                        const dogruMu = secilen===qq.ans;
+                                        return <div key={qi} className="border-b border-slate-100 pb-5 last:border-0">
+                                            <div className="font-bold text-slate-800 mb-2"><span className="text-indigo-600">{qi+1}.</span> {qq.q}</div>
+                                            <div className="text-sm font-bold mb-2">
+                                                <span className="text-emerald-700">✔ Doğru: {String.fromCharCode(65+qq.ans)}) {qq.opts[qq.ans]}</span>
+                                                {secilen!==undefined && !dogruMu && <span className="text-rose-600 ml-3">✘ Senin: {String.fromCharCode(65+secilen)}) {qq.opts[secilen]}</span>}
+                                                {secilen===undefined && <span className="text-slate-400 ml-3">(boş)</span>}
+                                            </div>
+                                            <div className="text-sm text-slate-600 bg-slate-50 rounded-xl p-3 readable-text" dangerouslySetInnerHTML={{__html: qq.exp||''}}></div>
+                                        </div>;
+                                    })}
+                                </div>
+                            </div>
+
+                            <button onClick={goBack} className="w-full bg-slate-800 text-white py-5 rounded-[2rem] font-black text-xl shadow-2xl hover:bg-black transition active:scale-95">Ana Menüye Dön</button>
+                        </div>
+                    </div>
+                );
+            }
             
             return (
                 <div className="h-full flex flex-col bg-slate-100 p-4 md:p-8 anim-fade">
                     <div className="flex justify-between items-center mb-6 max-w-7xl mx-auto w-full">
-                        <button onClick={goBack} className="bg-white px-6 py-3 rounded-2xl font-black text-slate-600 hover:text-red-600 shadow-md transition">Sınavı Bitir</button>
+                        <button onClick={()=> isNotebook ? goBack() : setFinished(true)} className="bg-white px-6 py-3 rounded-2xl font-black text-slate-600 hover:text-red-600 shadow-md transition">Sınavı Bitir</button>
                         <div className="bg-indigo-600 px-6 py-3 rounded-2xl font-black text-white shadow-md text-lg tracking-widest">SORU {idx+1} / {questions.length}</div>
                     </div>
                     <div className="flex-1 overflow-y-auto max-w-7xl mx-auto w-full hide-scroll pb-10">
@@ -1152,7 +1234,7 @@ window.ZIRVE = { RING, get model(){return MODEL;}, set model(m){ MODEL=m; localS
                     </div>
                     {show && 
                         <div className="max-w-7xl mx-auto w-full pt-4">
-                            <button onClick={()=>{if(idx<questions.length-1){setIdx(idx+1);setShow(false)}else{alert(`Sınav Bitti! Puanın: ${score}/${questions.length}`);goBack()}}} className="w-full bg-slate-800 text-white py-6 rounded-[2rem] font-black text-2xl shadow-2xl hover:bg-black transition active:scale-95 flex justify-center items-center gap-3 border-4 border-slate-700">
+                            <button onClick={()=>{if(idx<questions.length-1){setIdx(idx+1);setShow(false)}else{setFinished(true)}}} className="w-full bg-slate-800 text-white py-6 rounded-[2rem] font-black text-2xl shadow-2xl hover:bg-black transition active:scale-95 flex justify-center items-center gap-3 border-4 border-slate-700">
                                 {idx<questions.length-1 ? 'SIRADAKİ SORU' : 'SONUÇLARI GÖR'} <Icon name="arrow-right" size={28}/>
                             </button>
                         </div>
@@ -1256,7 +1338,8 @@ window.ZIRVE = { RING, get model(){return MODEL;}, set model(m){ MODEL=m; localS
                 setLoading(true);
                 setActiveTopic(conf.type);
                 try {
-                    const prompt = `Sen ordinaryüs profesör seviyesinde bir KPSS/ÖABT ve AGS uzmanısın. Alan: "${conf.type}". Seçilen stratejiye uygun "${conf.strategy}" zorluğunda ${conf.count} adet deneme sorusu yaz. 
+                    const dagilimNotu = conf.type.includes("Okul Öncesi ÖABT") ? " ÖNEMLİ: Okul Öncesi ÖABT resmi yapısı 30 Alan Bilgisi + 20 Alan Eğitimi = 50 sorudur; ürettiğin sorular bu iki bölümün konularına dengeli dağılsın." : conf.type.includes("TAM DENEME · AGS") ? " ÖNEMLİ: AGS 80 soruluk yapıdadır; Sözel/Sayısal Yetenek, Tarih, Coğrafya, Vatandaşlık, Eğitim Bilimleri ve Mevzuat konularına dengeli dağılsın." : "";
+                    const prompt = `Sen ordinaryüs profesör seviyesinde bir KPSS/ÖABT ve AGS uzmanısın. Alan: "${conf.type}".${dagilimNotu} Seçilen stratejiye uygun "${conf.strategy}" zorluğunda ${conf.count} adet deneme sorusu yaz. 
                     MUTLAK ZORUNLU KURAL: Her soru nesnesinde 'osym_q' ve 'osym_analizi' alanları KESİNLİKLE dolu olacak; ASLA boş bırakma, atlamaya çalışma. 'osym_q' o konuya benzeyen gerçekçi bir ÖSYM tarzı çıkmış soru simülasyonu (soru kökü + şıklar dahil), 'osym_analizi' ise ÖSYM'nin o konuda adayları hangi kelime oyunu/çeldiriciyle elediğidir. Bu iki alan eksikse cevap geçersizdir. 
                     SADECE JSON GÖNDER. Format: [{"q":"Ana Soru","opts":["A","B","C","D","E"],"ans":0,"exp":"HTML <strong>, <em>, <ul> ve emojiler kullanarak detaylıca açıkla.","osym_q":"Bu konuya benzer çıkmış veya çıkabilecek ÖSYM tarzı soru simülasyonu...","osym_analizi":"ÖSYM bu konuda öğrencileri hangi kelime oyunlarıyla veya mantıkla düşürür?"}]`;
                     const res = await callGoogle(apiKey, modelName, prompt, 'json');
